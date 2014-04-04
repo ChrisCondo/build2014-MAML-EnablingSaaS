@@ -1,0 +1,151 @@
+﻿@model WamlAndWaws.Models.HomePageViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <div class="jumbotron col-md-12">
+        <h1>MiniBlogger</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-8">
+        Use the form below to create your very own MiniBlog hosted in Windows Azure Web Sites
+    </div>
+</div>
+
+<div role="form" style="margin: 30px 0 0 0;">
+    <div class="row">
+        <div class="form-group col-md-4 has-error has-feedback" id="webNameFormGroup">
+            <label for="SiteName" class="control-label">DNS Prefix</label>
+            <input type="text" name="SiteName" id="siteName" value="" class="form-control" />
+        </div>
+        <div class="form-group col-md-4">
+            <span id="awaiting-confirmation">
+                Checking Site Name
+            </span>
+            <span id="negative-confirmation">
+                The site name you've entered is invalid or unavailable.
+            </span>
+            <span id="confirmation">
+                Site DNS will be<br />
+                <a href="#" id="newSiteLink" target="_blank"><strong id="dnsPrefix">whatever-you-enter-for-DNS-Prefix</strong>.azurewebsites.net</a>
+            </span>
+        </div>
+        <div class="form-group col-md-4">
+            <label for="SiteName">Web Site Region</label>
+            <select name="WebSpaceName" class="form-control" id="webSpaceName">
+                @{
+                    foreach (var webSpace in Model.WebSpaces)
+                    {
+                        <option value="@webSpace.WebSpaceName">@webSpace.GeoRegion</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-4">
+            <label for="SiteName">Blog Name</label>
+            <input type="text" name="BlogName" value="My New MiniBlog" class="form-control" id="blogName" />
+        </div>
+        <div class="form-group col-md-4">
+            <label for="SiteName">Blog Description</label>
+            <input type="text" name="Description" value="Welcome to my blog!" class="form-control" id="description"/>
+        </div>
+        <div class="form-group col-md-4">
+            <label for="SiteName">Your Name</label>
+            <input type="text" name="Copywright" value="Blogger Name" class="form-control" id="copywright"/>
+        </div>
+        <div class="col-md-4">
+            <button class="btn" id="createSiteButton">Create Site</button>
+        </div>
+    </div>
+</div>
+
+<div id="traceContainer" style="margin: 20px;">
+    <strong>Site Creation Log Output:</strong>
+    <ul id="trace" class="list-unstyled"></ul>
+</div>
+
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.signalR-2.0.2.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#awaiting-confirmation').hide();
+            $('#negative-confirmation').hide();
+            $('#confirmation').hide();
+            $('#traceContainer').hide();
+
+            var connection = $.hubConnection();
+            var hub = connection.createHubProxy('siteCreationTrace');
+
+            hub.on('traceReceived', function (line) {
+                if ($('#traceContainer').is(':hidden')) {
+                    $('#traceContainer').fadeIn();
+                }
+                $('#trace').prepend('<li>' + line + '</li>');
+            });
+
+            connection.start();
+
+            $('#createSiteButton').click(function () {
+                var url = '/api/newsite?SiteName=' + $('#siteName').val()
+                    + '&WebSpaceName=' + $('#webSpaceName').val()
+                    + '&BlogName=' + $('#blogName').val()
+                    + '&Description=' + $('#description').val()
+                    + '&Copywright=' + $('#copywright').val()
+
+                url = encodeURI(url);
+
+                $.get(url, function (data) {
+                    if (data == true) {
+                        window.open('http://' + $('#siteName').val() + '.azurewebsites.net');
+                    }
+                });
+            });
+
+            $('#siteName').change(function () {
+                if ($('#siteName').val().length >= 3) {
+                    $('#dnsPrefix').text($('#siteName').val());
+
+                    $('#newSiteLink').attr('href', 'http://' + $('#siteName').val() + '.azurewebsites.net');
+
+                    $('#webNameFormGroup')
+                        .removeClass('has-error')
+                        .removeClass('has-success')
+                        .addClass('has-warning');
+
+                    $('#negative-confirmation').hide();
+                    $('#confirmation').hide();
+                    $('#awaiting-confirmation').show();
+
+                    $.get('/api/checkname?webSiteName=' + $('#siteName').val(), function (response) {
+                        if (response == true) {
+                            $('#webNameFormGroup')
+                                .removeClass('has-warning')
+                                .removeClass('has-error')
+                                .addClass('has-success');
+
+                            $('#awaiting-confirmation').hide();
+                            $('#negative-confirmation').hide();
+                            $('#confirmation').show();
+                        }
+                        else {
+                            $('#webNameFormGroup')
+                                .removeClass('has-warning')
+                                .removeClass('has-success')
+                                .addClass('has-error');
+
+                            $('#awaiting-confirmation').hide();
+                            $('#negative-confirmation').show();
+                            $('#confirmation').hide();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

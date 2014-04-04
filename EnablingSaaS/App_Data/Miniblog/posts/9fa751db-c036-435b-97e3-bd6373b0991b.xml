@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<post>
+  <title>Welcome to MiniBlog</title>
+  <slug>welcome-to-miniblog</slug>
+  <author></author>
+  <pubDate>2013-06-06 11:44:23</pubDate>
+  <lastModified>2014-03-23 17:05:34</lastModified>
+  <content>&lt;p&gt;MiniBlog is a tiny little blogging tool created by &lt;a href="http://madskristensen.net/"&gt;Mads Kristensen&lt;/a&gt;, that is open-source and &lt;a href="https://github.com/madskristensen/miniblog"&gt;available on GitHub&lt;/a&gt;. You just created your own instance of MiniBlog using our handy little creation, MiniBlogger. &lt;/p&gt;&lt;p&gt;You should login to your instance here and change your password, write some new stuff. Have fun, and happy blogging!&lt;/p&gt;</content>
+  <ispublished>true</ispublished>
+  <categories>
+    <category>Blogging</category>
+  </categories>
+  <comments></comments>
+</post>
